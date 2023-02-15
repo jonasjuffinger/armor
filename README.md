@@ -10,8 +10,6 @@ executed.
 ARMOR consists of the `armor.h` file and the `Makefile`. During
 making, the source files are archived and the archive linked to 
 the binary.
-The Makefile installs `libarchive-dev` on debian based distributions if
-it is not installed or prints an error message.
 
 During execution, the function `additional_archive_content()` adds
 additional files, like system configuration files and output from
@@ -24,3 +22,8 @@ to the directory supplied as the first argument or "source".
 
 `print_measurement_csv_header()` must be called at the beginning of the 
 program.
+To test the supplied 1_experiment pipe the output to a csv file
+`./main > measurement.csv`
+
+Requirements:
+`libarchive-dev`
