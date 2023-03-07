@@ -22,8 +22,8 @@ to the directory supplied as the first argument or "source".
 
 `print_measurement_csv_header()` must be called at the beginning of the 
 program.
-To test the supplied 1_experiment pipe the output to a csv file
-`./main > measurement.csv`
+To test the supplied 1_experiment pipe the stderr output to a csv file
+`./main 2> measurement.csv`
 
 Requirements:
 `libarchive-dev`
