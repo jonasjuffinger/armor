@@ -15,15 +15,24 @@ During execution, the function `additional_archive_content()` adds
 additional files, like system configuration files and output from
 commands to the archive.
 The archive is then base64 encoded and written to the measurement output
-csv file. The csv read used to open the output file must supported # 
-for commends inside csv files.
+csv file. The csv read function used to open the output file must supported # 
+for comments inside csv files.
 The first line contains a shebang to extract the base64 encoded archive
 to the directory supplied as the first argument or "source".
 
 `print_measurement_csv_header()` must be called at the beginning of the 
 program.
 To test the supplied 1_experiment pipe the stderr output to a csv file
-`./main 2> measurement.csv`
+```
+./main 2> measurement.csv
+```
+Then, to get the source code and system configuration make the output
+file executable and execute it.
+```
+chmod +x measurement.csv
+./measurement.csv
+```
+This creates an output directory `source` containing all files.
 
 Requirements:
 `libarchive-dev`
