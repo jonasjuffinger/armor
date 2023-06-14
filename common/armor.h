@@ -7,7 +7,34 @@
 #include <string>
 #include <iostream>
 
-/* Advanced Reliable Measurement Output Reproduction (ARMOR) */
+/* Advanced Reliable Measurement Output Reproduction (ARMOR)
+ * 
+ * This small library embeds programmer selected files and command outputs
+ * into the measurement result csv file, encoded as base64.
+ * A user can simply execute the csv file and it extracts itself
+ * putting all source files and system config into a subfolder.
+ * To reproduce a measurement the extracted files can be compiled and
+ * executed.
+ * 
+ * ARMOR consists of this header file and the Makefile. During
+ * making, the source files are archived and the archive linked to 
+ * the binary.
+ * The Makefile installs libarchive-dev on debian based distributions if
+ * it is not installed or prints an error message.
+ * 
+ * During execution, the function additional_archive_content() adds
+ * additional files, like system configuration files and output from
+ * commands to the archive.
+ * The archive is then base64 encoded and written to the measurement output
+ * csv file. The csv read used to open the output file must supported # 
+ * for commends inside csv files.
+ * The first line contains a shebang to extract the base64 encoded archive
+ * to the directory supplied as the first argument or "source".
+ * 
+ * print_measurement_csv_header() must be called at the beginning of the 
+ * program.
+ */
+
 
 void add_file_to_archive(archive *a, const char *path);
 void add_command_output_to_archive(archive *a, const char *command, const char *path);
@@ -28,7 +55,7 @@ void additional_archive_content(archive *wa) {
   add_command_output_to_archive(wa, "uname -r", "commands/uname");
 
   // other examples:
-  //add_command_output_to_archive(wa, "dmesg | tail -c 1MB", "commands/dmesg");
+  //add_command_output_to_archive(wa, "dmesg 2>&1 | tail -c 1MB", "commands/dmesg");
   //add_command_output_to_archive(wa, "cpupower frequency-info", "commands/cpupower");
   //add_command_output_to_archive(wa, "undervolt -r", "commands/undervolt");
 }
@@ -189,6 +216,7 @@ void add_file_to_archive(archive *a, const char *path) {
 
 
 void add_command_output_to_archive(archive *a, const char *command, const char *path) {
+  int ret;
   size_t len = 0;
   archive_entry *entry = archive_entry_new();
 
@@ -219,6 +247,17 @@ void add_command_output_to_archive(archive *a, const char *command, const char *
   archive_write_header(a, entry);
   archive_write_data(a, outputbuf, outputbufsize);
   archive_write_finish_entry(a);
+  
+  ret = pclose(fp);
+  if (ret == -1) {
+    printf("pclose %s failed: %d %s\n", full_command.c_str(), errno, strerror(errno));
+    exit(1);
+  }
+  if (ret != 0) {
+    printf("%s returned a failure code: %d\n", full_command.c_str(), ret);
+    printf("command output:\n%s", outputbuf);
+    exit(1);
+  }
 
   free(outputbuf);
 
